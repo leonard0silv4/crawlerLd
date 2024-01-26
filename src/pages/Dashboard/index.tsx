@@ -3,9 +3,10 @@ import React, { useEffect, useState, useRef } from "react";
 import * as S from "./DashboardStyles";
 
 import Header from "../../components/Header";
-import axios from "axios";
-import { Progress, Button, Table, Badge } from "flowbite-react";
+import instance from "../../config/axios";
+import { Progress, Button, Table, Badge, TextInput } from "flowbite-react";
 import { useToast } from "../../context/ToastContext";
+import Pages from "../../components/Pagination";
 
 interface Product {
   sku: string;
@@ -23,8 +24,15 @@ export default function Dashboard() {
   const [link, setLink] = useState("");
   const [percent, setPercent] = useState("");
   const [onUpdate, setOnUpdate] = useState(false);
-  const [load, setLoad] = useState("none");
+  const [load, setLoad] = useState("");
   const [skusUpdated, setSkusUpdated] = useState<any>([]);
+  const [page, setPage] = useState(1);
+
+  const [pagination, setPagination] = useState({
+    currPage: page,
+    setPage,
+    totalPages: 1,
+  });
 
   const isMounted = useRef(false);
 
@@ -36,23 +44,43 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    fetchData();
+  }, [page]);
+
   const fetchData = async () => {
-    await axios
-      .get("https://server-zfw1.onrender.com/links/")
-      .then(({ data: response }) => {
+    await instance
+      .get("links", {
+        params: {
+          page: page,
+          perPage: 5,
+        },
+      })
+      .then(({ data: response, metadata }: any) => {
+        setPagination({
+          ...pagination,
+          totalPages: Math.ceil(metadata.totalCount / 5),
+        });
         setProducts(response);
       })
       .catch((err) => console.log(err));
   };
 
   const AddLink = () => {
+    try {
+      Boolean(new URL(link));
+    } catch (e) {
+      addToast(
+        "Problema ao adicionar, verifique se o link esta disponivel",
+        "error"
+      );
+      return;
+    }
     setLoad("addLink");
-    axios
-      .post("https://server-zfw1.onrender.com/links/", { link: link })
-      .then(({ data }) => {
-        console.log(data);
-
-        setProducts([...products, { ...data }]);
+    instance
+      .post("links", { link: link })
+      .then((response: Product | any) => {
+        fetchData();
 
         setLink("");
       })
@@ -62,25 +90,25 @@ export default function Dashboard() {
           "error"
         );
       })
-      .finally(() => setLoad("none"));
+      .finally(() => setLoad(""));
   };
 
   const deleteItem = ({ sku }: any) => {
     setLoad("delete");
-    axios
-      .delete(`https://trail-river-coriander.glitch.me/delete/${sku}`)
+    instance
+      .delete(`delete/${sku}`)
       .then(() => {
         setProducts((data) => data.filter((item) => item.sku != sku));
       })
       .catch((error) => {
         console.log("Error :", error);
       })
-      .finally(() => setLoad("none"));
+      .finally(() => setLoad(""));
   };
 
   const updateAll = () => {
     const eventSource = new EventSource(
-      "https://server-zfw1.onrender.com/links/update"
+      `${process.env.REACT_APP_BASE_URL}links/update`
     );
 
     setOnUpdate(true);
@@ -94,21 +122,7 @@ export default function Dashboard() {
         const productAtt = JSON.parse(event.data);
 
         setSkusUpdated((skusUpdated: any) => [...skusUpdated, productAtt.sku]);
-
-        setProducts((prevProducts) => {
-          const refreshedProducts = prevProducts.map((product) => {
-            if (product.sku === productAtt.sku) {
-              return {
-                ...product,
-                nowPrice: productAtt.nowPrice,
-                lastPrice: productAtt.lastPrice,
-              };
-            }
-            return product;
-          });
-          return refreshedProducts;
-        });
-
+        updateAnExist(productAtt);
         addToast(`${productAtt.name} Atualizado`, "success");
       }
     };
@@ -134,7 +148,21 @@ export default function Dashboard() {
     return `${parseFloat(diferencaPercentual.toFixed(2))}%`;
   };
 
-  if (products.length === 0) return <>Carregando</>;
+  const updateAnExist = (newProduct: Product) => {
+    setProducts((prevProducts) => {
+      const refreshedProducts = prevProducts.map((product) => {
+        if (product.sku === newProduct.sku) {
+          return {
+            ...product,
+            nowPrice: newProduct.nowPrice,
+            lastPrice: newProduct.lastPrice,
+          };
+        }
+        return product;
+      });
+      return refreshedProducts;
+    });
+  };
 
   return (
     <div className="min-h-full">
@@ -143,7 +171,7 @@ export default function Dashboard() {
       <header className="bg-white shadow">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-            Dashboard Crawler Links ld+json
+            Links cadastrados
           </h1>
           {onUpdate && (
             <Progress
@@ -163,16 +191,13 @@ export default function Dashboard() {
         <div className="mx-auto flex gap-5 max-w-7xl py-6 sm:px-6 lg:px-8">
           <div className="sm:col-span-12">
             <div className="mt-2">
-              <input
-                style={{ padding: "5px" }}
+              <TextInput
                 onChange={(e) => setLink(e.target.value)}
+                id="utl"
+                type="url"
                 value={link}
-                id="email"
-                name="email"
-                placeholder="Link"
-                type="email"
-                autoComplete="email"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                placeholder="URL"
+                required
               />
             </div>
             <div className="mt-6 flex items-center justify-start gap-x-6">
@@ -183,16 +208,7 @@ export default function Dashboard() {
                 size="sm"
                 color="gray"
               >
-                Add
-              </Button>
-              <Button
-                isProcessing={onUpdate ? true : false}
-                disabled={onUpdate ? true : false}
-                onClick={updateAll}
-                size="sm"
-                color="gray"
-              >
-                {onUpdate ? "Atualizando" : "Atualizar tudo"}
+                Adicionar
               </Button>
             </div>
           </div>
@@ -207,7 +223,15 @@ export default function Dashboard() {
                 <Table.HeadCell>Status</Table.HeadCell>
                 <Table.HeadCell>Variação</Table.HeadCell>
                 <Table.HeadCell>
-                  <span className="sr-only">remmove</span>
+                  <Button
+                    isProcessing={onUpdate ? true : false}
+                    disabled={onUpdate ? true : false}
+                    onClick={updateAll}
+                    size="xs"
+                    color="dark"
+                  >
+                    {onUpdate ? "..." : "Atualizar \n Lista"}
+                  </Button>
                 </Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y">
@@ -276,6 +300,12 @@ export default function Dashboard() {
                 })}
               </Table.Body>
             </Table>
+
+            <Pages
+              currPage={page}
+              setPage={pagination.setPage}
+              totalPages={pagination.totalPages}
+            />
           </div>
         </div>
       </S.Main>
