@@ -9,7 +9,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleSubmit = (e: any) => {
-    if (email === "leo07vasp@gmail.com" && pass === "abc@123") {
+    if (email === "root" && pass === "root") {
       if (window.localStorage !== undefined)
         localStorage.setItem("user", "true");
 
