@@ -96,9 +96,9 @@ export default function Dashboard() {
   const deleteItem = ({ sku }: any) => {
     setLoad("delete");
     instance
-      .delete(`delete/${sku}`)
+      .delete(`links/${sku}`)
       .then(() => {
-        setProducts((data) => data.filter((item) => item.sku != sku));
+        fetchData();
       })
       .catch((error) => {
         console.log("Error :", error);
