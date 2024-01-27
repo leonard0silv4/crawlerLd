@@ -203,9 +203,9 @@ export default function Dashboard() {
           )}
         </div>
       </header>
-      <S.Main>
-        <div className="mx-auto flex gap-5 max-w-7xl py-6 sm:px-6 lg:px-8">
-          <div className="sm:col-span-12">
+      <S.Main className="mt-5">
+        <div className="mx-auto flex-row flex gap-5 max-w-7xl xs:flex-col">
+          <div className="basis-1/4 ">
             <div className="mt-2">
               <TextInput
                 onChange={(e) => setLink(e.target.value)}
@@ -229,7 +229,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="sm:overflow-x-auto basis-3/4">
             {loadFetch ? (
               <div className="mx-auto text-center	mt-6">
                 <Spinner aria-label="Extra large spinner example" size="xl" />
@@ -326,15 +326,14 @@ export default function Dashboard() {
                     </Table.Body>
                   </Table>
                 )}
+                {pagination.totalPages > 1 && (
+                  <Pages
+                    currPage={page}
+                    setPage={pagination.setPage}
+                    totalPages={pagination.totalPages}
+                  />
+                )}
               </>
-            )}
-
-            {pagination.totalPages > 1 && (
-              <Pages
-                currPage={page}
-                setPage={pagination.setPage}
-                totalPages={pagination.totalPages}
-              />
             )}
           </div>
         </div>
