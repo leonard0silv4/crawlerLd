@@ -182,13 +182,6 @@ export default function Dashboard() {
     });
   };
 
-  if (loadFetch)
-    return (
-      <div className="mx-auto text-center	mt-6">
-        <Spinner aria-label="Extra large spinner example" size="xl" />
-      </div>
-    );
-
   return (
     <div className="min-h-full">
       <header className="bg-white shadow">
