@@ -4,7 +4,14 @@ import * as S from "./DashboardStyles";
 
 import Header from "../../components/Header";
 import instance from "../../config/axios";
-import { Progress, Button, Table, Badge, TextInput } from "flowbite-react";
+import {
+  Progress,
+  Button,
+  Table,
+  Badge,
+  TextInput,
+  Spinner,
+} from "flowbite-react";
 import { useToast } from "../../context/ToastContext";
 import Pages from "../../components/Pagination";
 
@@ -170,7 +177,12 @@ export default function Dashboard() {
     });
   };
 
-  if (!products.length) return <>carregando</>;
+  if (!products.length)
+    return (
+      <div className="mx-auto text-center	mt-6">
+        <Spinner aria-label="Extra large spinner example" size="xl" />
+      </div>
+    );
 
   return (
     <div className="min-h-full">
