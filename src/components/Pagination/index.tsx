@@ -7,7 +7,9 @@ interface PaginationProps {
 }
 
 const Pages = ({ currPage, totalPages, setPage }: PaginationProps) => {
-  const onPageChange = (page: number) => setPage(page);
+  const onPageChange = (page: number) => {
+    setPage(page);
+  };
 
   return (
     <div className="flex overflow-x-auto sm:justify-center">

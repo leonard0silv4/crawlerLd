@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [load, setLoad] = useState("");
   const [skusUpdated, setSkusUpdated] = useState<any>([]);
   const [page, setPage] = useState(1);
+  const [isMount, setIsMount] = useState(true);
 
   const [pagination, setPagination] = useState({
     currPage: page,
@@ -45,6 +46,11 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    if (isMount) {
+      setIsMount(false);
+      return;
+    }
+
     fetchData();
   }, [page]);
 
@@ -164,10 +170,10 @@ export default function Dashboard() {
     });
   };
 
+  if (!products.length) return <>carregando</>;
+
   return (
     <div className="min-h-full">
-      <Header />
-
       <header className="bg-white shadow">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
@@ -214,92 +220,94 @@ export default function Dashboard() {
           </div>
 
           <div className="overflow-x-auto">
-            <Table striped hoverable>
-              <Table.Head>
-                <Table.HeadCell>Imagem</Table.HeadCell>
-                <Table.HeadCell>Nome</Table.HeadCell>
-                <Table.HeadCell>Preço atual</Table.HeadCell>
-                <Table.HeadCell>Ultimo preço</Table.HeadCell>
-                <Table.HeadCell>Status</Table.HeadCell>
-                <Table.HeadCell>Variação</Table.HeadCell>
-                <Table.HeadCell>
-                  <Button
-                    isProcessing={onUpdate ? true : false}
-                    disabled={onUpdate ? true : false}
-                    onClick={updateAll}
-                    size="xs"
-                    color="dark"
-                  >
-                    {onUpdate ? "..." : "Atualizar \n Lista"}
-                  </Button>
-                </Table.HeadCell>
-              </Table.Head>
-              <Table.Body className="divide-y">
-                {products?.map((product) => {
-                  return (
-                    <Table.Row
-                      key={product.sku}
-                      className={`bg-white dark:border-gray-700 dark:bg-gray-800 ${
-                        skusUpdated.includes(product.sku) ? "ok" : ""
-                      }`}
+            {products.length > 0 && (
+              <Table striped hoverable>
+                <Table.Head>
+                  <Table.HeadCell>Imagem</Table.HeadCell>
+                  <Table.HeadCell>Nome</Table.HeadCell>
+                  <Table.HeadCell>Preço atual</Table.HeadCell>
+                  <Table.HeadCell>Ultimo preço</Table.HeadCell>
+                  <Table.HeadCell>Status</Table.HeadCell>
+                  <Table.HeadCell>Variação</Table.HeadCell>
+                  <Table.HeadCell>
+                    <Button
+                      isProcessing={onUpdate ? true : false}
+                      disabled={onUpdate ? true : false}
+                      onClick={updateAll}
+                      size="xs"
+                      color="dark"
                     >
-                      <Table.Cell>
-                        <img
-                          alt={product.name}
-                          title={product.name}
-                          style={{
-                            width: "50px",
-                            height: "50px",
-                            objectFit: "scale-down",
-                          }}
-                          src={product.image}
-                        />
-                      </Table.Cell>
-                      <Table.Cell
-                        title={product.name}
-                        className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                      {onUpdate ? "..." : "Atualizar \n Lista"}
+                    </Button>
+                  </Table.HeadCell>
+                </Table.Head>
+                <Table.Body className="divide-y">
+                  {products?.map((product) => {
+                    return (
+                      <Table.Row
+                        key={product.sku}
+                        className={`bg-white dark:border-gray-700 dark:bg-gray-800 ${
+                          skusUpdated.includes(product.sku) ? "ok" : ""
+                        }`}
                       >
-                        {product.name.length > 30
-                          ? `${product.name.slice(0, 30)}...`
-                          : product.name}
-                      </Table.Cell>
-                      <Table.Cell>R${product.nowPrice}</Table.Cell>
-                      <Table.Cell>R${product.lastPrice}</Table.Cell>
-                      <Table.Cell>
-                        {product.status.indexOf("InStock") != -1 ||
-                        product.nowPrice != 0 ? (
-                          <Badge color="success">ON</Badge>
-                        ) : (
-                          <Badge color="failure">OFF</Badge>
-                        )}
-                      </Table.Cell>
-                      <Table.Cell>
-                        R$
-                        {product.lastPrice !== product.nowPrice
-                          ? (product.nowPrice - product.lastPrice).toFixed(2)
-                          : 0}
-                        (
-                        {calcularDiferencaPercentual(
-                          product.lastPrice,
-                          product.nowPrice
-                        )}
-                        )
-                      </Table.Cell>
-
-                      <Table.Cell>
-                        <a
-                          href="#"
-                          className="font-medium text-red-600 hover:underline dark:text-cyan-500 isProcessing"
-                          onClick={() => deleteItem(product)}
+                        <Table.Cell>
+                          <img
+                            alt={product.name}
+                            title={product.name}
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              objectFit: "scale-down",
+                            }}
+                            src={product.image}
+                          />
+                        </Table.Cell>
+                        <Table.Cell
+                          title={product.name}
+                          className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
                         >
-                          Remover
-                        </a>
-                      </Table.Cell>
-                    </Table.Row>
-                  );
-                })}
-              </Table.Body>
-            </Table>
+                          {product.name.length > 30
+                            ? `${product.name.slice(0, 30)}...`
+                            : product.name}
+                        </Table.Cell>
+                        <Table.Cell>R${product.nowPrice}</Table.Cell>
+                        <Table.Cell>R${product.lastPrice}</Table.Cell>
+                        <Table.Cell>
+                          {product.status.indexOf("InStock") != -1 ||
+                          product.nowPrice != 0 ? (
+                            <Badge color="success">ON</Badge>
+                          ) : (
+                            <Badge color="failure">OFF</Badge>
+                          )}
+                        </Table.Cell>
+                        <Table.Cell>
+                          R$
+                          {product.lastPrice !== product.nowPrice
+                            ? (product.nowPrice - product.lastPrice).toFixed(2)
+                            : 0}
+                          (
+                          {calcularDiferencaPercentual(
+                            product.lastPrice,
+                            product.nowPrice
+                          )}
+                          )
+                        </Table.Cell>
+
+                        <Table.Cell>
+                          <a
+                            href="#"
+                            className="font-medium text-red-600 hover:underline dark:text-cyan-500 isProcessing"
+                            onClick={() => deleteItem(product)}
+                          >
+                            Remover
+                          </a>
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  })}
+                </Table.Body>
+              </Table>
+            )}
 
             <Pages
               currPage={page}

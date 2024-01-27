@@ -7,6 +7,7 @@ import Sales from "./pages/Sales";
 import Login from "./pages/Login";
 import { useToast } from "./context/ToastContext";
 import ToastWrapper from "./components/Toast";
+import Header from "./components/Header";
 
 function App() {
   const { toasts } = useToast();
@@ -14,6 +15,7 @@ function App() {
   return (
     <>
       <ToastWrapper toasts={toasts} />
+      <Header />
       <Router>
         <Routes>
           <Route element={<PrivateRoutes />}>
