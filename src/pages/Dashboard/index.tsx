@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [skusUpdated, setSkusUpdated] = useState<any>([]);
   const [page, setPage] = useState(1);
   const [isMount, setIsMount] = useState(true);
+  const [loadFetch, setLoadFetch] = useState(true);
 
   const [pagination, setPagination] = useState({
     currPage: page,
@@ -62,6 +63,7 @@ export default function Dashboard() {
   }, [page]);
 
   const fetchData = async () => {
+    setLoadFetch(true);
     await instance
       .get("links", {
         params: {
@@ -76,7 +78,10 @@ export default function Dashboard() {
         });
         setProducts(response);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log(err))
+      .finally(() => {
+        setLoadFetch(false);
+      });
   };
 
   const AddLink = () => {
@@ -92,9 +97,8 @@ export default function Dashboard() {
     setLoad("addLink");
     instance
       .post("links", { link: link })
-      .then((response: Product | any) => {
+      .then(() => {
         fetchData();
-
         setLink("");
       })
       .catch((error: any) => {
@@ -111,6 +115,7 @@ export default function Dashboard() {
     instance
       .delete(`links/${sku}`)
       .then(() => {
+        setProducts((data) => data.filter((item) => item.sku != sku));
         fetchData();
       })
       .catch((error) => {
@@ -177,7 +182,7 @@ export default function Dashboard() {
     });
   };
 
-  if (!products.length)
+  if (loadFetch)
     return (
       <div className="mx-auto text-center	mt-6">
         <Spinner aria-label="Extra large spinner example" size="xl" />
@@ -321,11 +326,13 @@ export default function Dashboard() {
               </Table>
             )}
 
-            <Pages
-              currPage={page}
-              setPage={pagination.setPage}
-              totalPages={pagination.totalPages}
-            />
+            {pagination.totalPages > 1 && (
+              <Pages
+                currPage={page}
+                setPage={pagination.setPage}
+                totalPages={pagination.totalPages}
+              />
+            )}
           </div>
         </div>
       </S.Main>
