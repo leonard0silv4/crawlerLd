@@ -63,7 +63,7 @@ export default function Dashboard() {
   }, [page]);
 
   const fetchData = async () => {
-    setLoadFetch(true);
+    if (!isMounted) setLoadFetch(true);
     await instance
       .get("links", {
         params: {
