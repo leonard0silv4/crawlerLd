@@ -12,7 +12,7 @@ const Pages = ({ currPage, totalPages, setPage }: PaginationProps) => {
   };
 
   return (
-    <div className="flex mt-6 overflow-x-auto sm:justify-center">
+    <div className="flex my-6 mx-4 overflow-x-auto sm:justify-center">
       <Pagination
         currentPage={currPage}
         totalPages={totalPages}

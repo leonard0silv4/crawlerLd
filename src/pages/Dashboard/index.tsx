@@ -204,9 +204,9 @@ export default function Dashboard() {
         </div>
       </header>
       <S.Main className="mt-5">
-        <div className="mx-auto flex-row flex gap-5 max-w-7xl xs:flex-col">
-          <div className="basis-1/4 ">
-            <div className="mt-2">
+        <div className="mx-auto flex-col flex gap-5 max-w-7xl xs:flex-col">
+          <div className="basis-4/4 ">
+            <div className="mt-6 flex items-center justify-start gap-x-5">
               <TextInput
                 onChange={(e) => setLink(e.target.value)}
                 id="utl"
@@ -215,8 +215,6 @@ export default function Dashboard() {
                 placeholder="URL"
                 required
               />
-            </div>
-            <div className="mt-6 flex items-center justify-start gap-x-6">
               <Button
                 onClick={AddLink}
                 isProcessing={load === "addLink" ? true : false}
@@ -226,10 +224,20 @@ export default function Dashboard() {
               >
                 Adicionar
               </Button>
+
+              <Button
+                isProcessing={onUpdate ? true : false}
+                disabled={onUpdate ? true : false}
+                onClick={updateAll}
+                size="sm"
+                color="dark"
+              >
+                {onUpdate ? "..." : "Atualizar Lista"}
+              </Button>
             </div>
           </div>
 
-          <div className="sm:overflow-x-auto basis-3/4">
+          <div className="overflow-x-auto basis-3/4">
             {loadFetch ? (
               <div className="mx-auto text-center	mt-6">
                 <Spinner aria-label="Extra large spinner example" size="xl" />
@@ -245,17 +253,7 @@ export default function Dashboard() {
                       <Table.HeadCell>Ultimo preço</Table.HeadCell>
                       <Table.HeadCell>Status</Table.HeadCell>
                       <Table.HeadCell>Variação</Table.HeadCell>
-                      <Table.HeadCell>
-                        <Button
-                          isProcessing={onUpdate ? true : false}
-                          disabled={onUpdate ? true : false}
-                          onClick={updateAll}
-                          size="xs"
-                          color="dark"
-                        >
-                          {onUpdate ? "..." : "Atualizar \n Lista"}
-                        </Button>
-                      </Table.HeadCell>
+                      <Table.HeadCell></Table.HeadCell>
                     </Table.Head>
                     <Table.Body className="divide-y">
                       {products?.map((product) => {
@@ -282,9 +280,11 @@ export default function Dashboard() {
                               title={product.name}
                               className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
                             >
-                              {product.name.length > 30
-                                ? `${product.name.slice(0, 30)}...`
-                                : product.name}
+                              <a target="_blank" href={product.link}>
+                                {product.name.length > 30
+                                  ? `${product.name.slice(0, 30)}...`
+                                  : product.name}
+                              </a>
                             </Table.Cell>
                             <Table.Cell>R${product.nowPrice}</Table.Cell>
                             <Table.Cell>R${product.lastPrice}</Table.Cell>
